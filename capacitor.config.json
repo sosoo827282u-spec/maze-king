@@ -1,0 +1,13 @@
+{
+  "appId": "com.sosoo.mazeking",
+  "appName": "ملك المتاهة",
+  "webDir": ".",
+  "plugins": {
+    "AdMob": {
+      "appId": "ca-app-pub-6182767577623779~4644030582",
+      "bannerAdId": "ca-app-pub-6182767577623779/1642462725",
+      "interstitialAdId": "ca-app-pub-6182767577623779/1962677294",
+      "testDevices": []
+    }
+  }
+}
