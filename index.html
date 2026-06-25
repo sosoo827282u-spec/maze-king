@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MAZE KING</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@900&family=Orbitron:wght@900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Cairo',sans-serif;min-height:100vh;overflow:hidden;position:relative;direction:rtl}
+.screen{position:fixed;top:0;left:0;width:100%;height:100%;display:none;justify-content:center;align-items:center;padding:15px;z-index:10;overflow-y:auto}
+.screen.active{display:flex}
+
+/* 6 ثيمات مختلفة */
+body.theme-0{background:#0a0015}
+body.theme-0::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(147,51,234,0.5) 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,rgba(168,85,247,0.4) 0%,transparent 50%),linear-gradient(180deg,#0a0015 0%,#1a0033 50%,#2d1b4e 100%);z-index:0}
+body.theme-1{background:#001a33}
+body.theme-1::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(59,130,246,0.5) 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(6,182,212,0.4) 0%,transparent 50%),linear-gradient(180deg,#001a33 0%,#0c4a6e 50%,#164e63 100%);z-index:0}
+body.theme-2{background:#330000}
+body.theme-2::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(239,68,68,0.5) 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,rgba(249,115,22,0.4) 0%,transparent 50%),linear-gradient(180deg,#330000 0%,#7c2d12 50%,#9a3412 100%);z-index:0}
+body.theme-3{background:#001a00}
+body.theme-3::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(16,185,129,0.5) 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(20,184,166,0.4) 0%,transparent 50%),linear-gradient(180deg,#001a00 0%,#064e3b 50%,#134e4a 100%);z-index:0}
+body.theme-4{background:#1a1a00}
+body.theme-4::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,0.5) 0%,transparent 50%),radial-gradient(ellipse at 0% 100%,rgba(234,179,8,0.4) 0%,transparent 50%),linear-gradient(180deg,#1a1a00 0%,#713f12 50%,#854d0e 100%);z-index:0}
+body.theme-5{background:#330011}
+body.theme-5::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(236,72,153,0.5) 0%,transparent 50%),radial-gradient(ellipse at 100% 100%,rgba(244,114,182,0.4) 0%,transparent 50%),linear-gradient(180deg,#330011 0%,#831843 50%,#9f1239 100%);z-index:0}
+
+.stars{position:fixed;width:100%;height:100%;pointer-events:none;z-index:1}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;box-shadow:0 0 10px #fff;animation:twinkle 3s infinite}
+@keyframes twinkle{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:1;transform:scale(1.5)}}
+
+.game-container{position:relative;background:linear-gradient(145deg,rgba(88,28,135,0.5),rgba(147,51,234,0.5));border:4px solid rgba(255,255,255,0.15);border-radius:35px;padding:22px;max-width:500px;width:100%;backdrop-filter:blur(40px) saturate(180%);box-shadow:0 30px 90px rgba(147,51,234,0.6),inset 0 2px 0 rgba(255,255,255,0.2);animation:containerFloat 6s ease-in-out infinite}
+.game-container::before{content:'';position:absolute;top:-3px;left:-3px;right:-3px;bottom:-3px;background:linear-gradient(45deg,#a855f7,#ec4899,#f59e0b,#a855f7);border-radius:35px;z-index:-1;animation:borderGlow 3s linear infinite;filter:blur(8px);opacity:0.9}
+@keyframes borderGlow{0%{filter:blur(8px) hue-rotate(0deg)}100%{filter:blur(8px) hue-rotate(360deg)}}
+@keyframes containerFloat{0%,100%{transform:translateY(0px)}50%{transform:translateY(-12px)}}
+
+h1{font-family:'Orbitron',sans-serif;text-align:center;font-size:2.8rem;font-weight:900;background:linear-gradient(180deg,#ffd700 0%,#fbbf24 50%,#f59e0b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;letter-spacing:6px;text-shadow:0 0 50px rgba(251,191,36,0.9);position:relative;direction:ltr}
+h1::before{content:'👑';position:absolute;left:50%;top:-40px;transform:translateX(-50%);font-size:3rem;animation:crownBounce 2s ease-in-out infinite;filter:drop-shadow(0 0 30px #ffd700)}
+@keyframes crownBounce{0%,100%{transform:translateX(-50%) translateY(0px) rotate(-5deg)}50%{transform:translateX(-50%) translateY(-12px) rotate(5deg)}}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;direction:ltr}
+.stat-box{background:linear-gradient(135deg,rgba(168,85,247,0.3),rgba(236,72,153,0.3));padding:15px;border-radius:20px;text-align:center;border:2px solid rgba(255,255,255,0.2);box-shadow:0 10px 35px rgba(168,85,247,0.4),inset 0 1px 0 rgba(255,255,255,0.15);backdrop-filter:blur(20px);transition:all 0.3s;position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.15),transparent);transform:rotate(45deg);animation:shine 3s infinite}
+@keyframes shine{0%{transform:translateX(-100%) translateY(-100%) rotate(45deg)}100%{transform:translateX(100%) translateY(100%) rotate(45deg)}}
+.stat-box:active{transform:scale(0.93)}
+.stat-label{font-size:0.7rem;color:#fbbf24;text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;font-weight:900;text-shadow:0 0 20px #fbbf24}
+.stat-value{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900;background:linear-gradient(180deg,#fff,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 25px #fbbf24)}
+
+#gameCanvas{display:block;margin:0 auto;border-radius:25px;background:#000;box-shadow:0 25px 80px rgba(168,85,247,0.7),inset 0 0 50px rgba(0,0,0,0.9),inset 0 0 0 4px rgba(168,85,247,0.5);max-width:100%;height:auto}
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px;max-width:260px;margin-left:auto;margin-right:auto;direction:ltr}
+.btn{background:linear-gradient(145deg,rgba(168,85,247,0.35),rgba(236,72,153,0.35));border:3px solid rgba(255,255,255,0.25);border-radius:22px;color:#fff;font-size:2.3rem;padding:18px;cursor:pointer;font-weight:900;box-shadow:0 12px 45px rgba(168,85,247,0.5),inset 0 2px 0 rgba(255,255,255,0.15);transition:all 0.08s;text-shadow:0 0 30px #fff,0 0 60px #a855f7;backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.btn::before{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,0.7),transparent);transform:translate(-50%,-50%);transition:width 0.6s,height 0.6s}
+.btn:active::before{width:300px;height:300px}
+.btn:active{background:linear-gradient(145deg,#a855f7,#ec4899);box-shadow:0 0 90px #a855f7,0 0 140px #ec4899;transform:scale(0.88);color:#000;text-shadow:none}
+.btn-up{grid-column:2}
+.btn-left{grid-column:1;grid-row:2}
+.btn-right{grid-column:3;grid-row:2}
+.btn-down{grid-column:2;grid-row:3}
+.menu{display:flex;gap:14px;margin-top:20px}
+.menu-btn{flex:1;background:linear-gradient(135deg,rgba(168,85,247,0.25),rgba(236,72,153,0.25));border:2px solid rgba(255,255,255,0.2);padding:16px;border-radius:18px;color:#fff;cursor:pointer;font-weight:900;font-size:0.95rem;box-shadow:0 10px 35px rgba(168,85,247,0.4),inset 0 1px 0 rgba(255,255,255,0.15);text-shadow:0 0 20px #fff;backdrop-filter:blur(15px);transition:all 0.15s}
+.menu-btn:active{background:linear-gradient(135deg,#a855f7,#ec4899);box-shadow:0 0 60px #a855f7;color:#000;transform:scale(0.9);text-shadow:none}
+
+.level-select{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;max-height:65vh;overflow-y:auto;padding:10px}
+.level-card{background:linear-gradient(135deg,rgba(168,85,247,0.35),rgba(236,72,153,0.35));border:3px solid rgba(255,255,255,0.2);border-radius:24px;padding:22px;text-align:center;cursor:pointer;box-shadow:0 12px 45px rgba(168,85,247,0.5),inset 0 1px 0 rgba(255,255,255,0.15);backdrop-filter:blur(20px);transition:all 0.3s;position:relative;overflow:hidden}
+.level-card.locked{opacity:0.35;cursor:not-allowed;filter:grayscale(0.8)}
+.level-card.unlocked:active{transform:scale(0.88);background:linear-gradient(135deg,#a855f7,#ec4899);box-shadow:0 0 70px #a855f7}
+.level-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.15),transparent);transform:rotate(45deg);animation:cardShine 4s infinite}
+@keyframes cardShine{0%{transform:translateX(-100%) translateY(-100%) rotate(45deg)}100%{transform:translateX(100%) translateY(100%) rotate(45deg)}}
+.level-num{font-family:'Orbitron',sans-serif;font-size:2.8rem;font-weight:900;background:linear-gradient(180deg,#ffd700,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;filter:drop-shadow(0 0 25px #ffd700)}
+.level-name{font-size:0.9rem;color:#fff;font-weight:900;text-shadow:0 0 15px #fff}
+.level-icon{font-size:2.5rem;margin-bottom:10px;filter:drop-shadow(0 0 20px currentColor);animation:iconFloat 3s ease-in-out infinite}
+@keyframes iconFloat{0%,100%{transform:translateY(0px)}50%{transform:translateY(-5px)}}
+.level-difficulty{font-size:0.75rem;color:#fbbf24;margin-top:8px;text-shadow:0 0 15px #fbbf24;font-weight:900}
+
+.popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.98);display:none;justify-content:center;align-items:center;z-index:9999;backdrop-filter:blur(80px)}
+.popup.show{display:flex;animation:fadeIn 0.8s}
+@keyframes fadeIn{from{opacity:0;backdrop-filter:blur(0px)}to{opacity:1;backdrop-filter:blur(80px)}}
+.popup-content{background:linear-gradient(145deg,rgba(88,28,135,0.98),rgba(147,51,234,0.98));border:5px solid transparent;border-image:linear-gradient(45deg,#a855f7,#ec4899,#f59e0b,#a855f7) 1;border-radius:50px;padding:70px 55px;text-align:center;box-shadow:0 50px 220px rgba(168,85,247,0.7),inset 0 2px 0 rgba(255,255,255,0.15);max-width:500px;width:90%;animation:popScale 1s cubic-bezier(0.68,-0.55,0.265,1.55);backdrop-filter:blur(50px);position:relative}
+.popup-content::before{content:'👑';position:absolute;top:-50px;left:50%;transform:translateX(-50%);font-size:5.5rem;animation:crownBounce 2s ease-in-out infinite;filter:drop-shadow(0 0 40px #ffd700)}
+@keyframes popScale{0%{transform:scale(0.01) rotate(-1440deg) translateZ(-2000px);opacity:0}60%{transform:scale(1.3) rotate(40deg) translateZ(200px)}100%{transform:scale(1) rotate(0deg) translateZ(0);opacity:1}}
+.popup-title{font-family:'Orbitron',sans-serif;font-size:3.5rem;font-weight:900;background:linear-gradient(180deg,#ffd700,#fbbf24,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:35px;filter:drop-shadow(0 0 70px #ffd700) drop-shadow(0 0 140px #ffd700);animation:titleGlow 2s ease-in-out infinite}
+@keyframes titleGlow{0%,100%{filter:drop-shadow(0 0 70px #ffd700) drop-shadow(0 0 140px #ffd700)}50%{filter:drop-shadow(0 0 110px #ffd700) drop-shadow(0 0 200px #ffd700)}}
+.popup-text{font-size:1.8rem;background:linear-gradient(180deg,#fff,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:45px;line-height:2.8;font-weight:900;filter:drop-shadow(0 0 40px #fbbf24)}
+.popup-btn{background:linear-gradient(145deg,#ffd700,#fbbf24);border:none;padding:30px 70px;border-radius:35px;color:#000;font-weight:900;font-size:1.7rem;cursor:pointer;box-shadow:0 30px 80px rgba(255,215,0,0.8),inset 0 -8px 30px rgba(0,0,0,0.3),inset 0 4px 0 rgba(255,255,255,0.5);transition:all 0.1s;width:100%;text-shadow:0 0 10px rgba(0,0,0,0.3);position:relative;overflow:hidden}
+.popup-btn::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.7),transparent);transform:rotate(45deg);animation:btnShine 3s infinite}
+.popup-btn:active{background:linear-gradient(145deg,#ffed4e,#ffd700);box-shadow:0 0 140px #ffd700,0 0 200px #ffd700;transform:scale(0.92)}
+.back-btn{position:absolute;top:20px;right:20px;background:linear-gradient(135deg,rgba(168,85,247,0.4),rgba(236,72,153,0.4));border:2px solid rgba(255,255,255,0.25);padding:14px 22px;border-radius:16px;color:#fff;font-weight:900;font-size:0.95rem;cursor:pointer;box-shadow:0 10px 30px rgba(168,85,247,0.5);text-shadow:0 0 20px #fff;backdrop-filter:blur(15px);transition:all 0.2s}
+.back-btn:active{background:linear-gradient(135deg,#a855f7,#ec4899);transform:scale(0.88)}
+</style>
+</head>
+<body class="theme-0">
+<div class="stars" id="stars"></div>
+
+<!-- شاشة البداية -->
+<div class="screen active" id="homeScreen">
+<div class="game-container">
+<h1>MAZE KING</h1>
+<div class="menu" style="flex-direction:column;gap:18px;margin-top:30px">
+<button class="menu-btn" onclick="showLevels()" style="font-size:1.3rem;padding:20px">🎮 ابدأ اللعب</button>
+<button class="menu-btn" onclick="alert('اكمل المراحل لفتح المزيد!')" style="font-size:1.1rem;padding:18px">⭐ الإنجازات</button>
+<button class="menu-btn" onclick="alert('MAZE KING v2.0')" style="font-size:1.1rem;padding:18px">⚙️ حول</button>
+</div>
+</div>
+</div>
+
+<!-- شاشة اختيار المراحل -->
+<div class="screen" id="levelScreen">
+<div class="game-container">
+<button class="back-btn" onclick="showHome()">← رجوع</button>
+<h1>اختر المستوى</h1>
+<div class="level-select" id="levelSelect"></div>
+</div>
+</div>
+
+<!-- شاشة اللعب -->
+<div class="screen" id="gameScreen">
+<div class="game-container">
+<button class="back-btn" onclick="showLevels()">← القائمة</button>
+<h1 id="levelTitle">المستوى 1</h1>
+<div class="stats">
+<div class="stat-box"><div class="stat-label">Level</div><div class="stat-value" id="level">1/30</div></div>
+<div class="stat-box"><div class="stat-label">Moves</div><div class="stat-value" id="moves">0</div></div>
+<div class="stat-box"><div class="stat-label">Time</div><div class="stat-value" id="time">0</div></div>
+</div>
+<canvas id="gameCanvas"></canvas>
+<div class="controls">
+<button class="btn btn-up" onclick="move(0,-1)">▲</button>
+<button class="btn btn-left" onclick="move(-1,0)">◀</button>
+<button class="btn btn-right" onclick="move(1,0)">▶</button>
+<button class="btn btn-down" onclick="move(0,1)">▼</button>
+</div>
+<div class="menu">
+<button class="menu-btn" onclick="resetLevel()">↻ إعادة</button>
+<button class="menu-btn" onclick="hint()">💡 تلميح</button>
+<button class="menu-btn" onclick="showLevels()">📋 قائمة</button>
+</div>
+</div>
+</div>
+
+<div class="popup" id="winPopup">
+<div class="popup-content">
+<div class="popup-title">KING VICTORY</div>
+<div class="popup-text" id="winText"></div>
+<button class="popup-btn" onclick="continueGame()">التالي 👑</button>
+</div>
+<script>
+// نجوم متحركة
+for(let i=0;i<50;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=Math.random()*3+'s';document.getElementById('stars').appendChild(s)}
+
+let canvas=document.getElementById('gameCanvas'),ctx=canvas.getContext('2d'),level=0,moves=0,time=0,timer,player={x:1,y:1},maze=[],goal={x:0,y:0};
+let unlockedLevel=parseInt(localStorage.getItem('unlockedLevel')||'0');
+
+const levelNames=['الواحة الذهبية','معبد الجليد','بركان الغضب','الغابة المسحورة','المتاهة الدائرية','الصحراء الحارقة','الجنة السماوية','كهف الكريستال','معبد النار','بوابة الزمن','القلعة الملكية','الفضاء الخارجي','المحيط العميق','مدينة المستقبل','القلعة المتحركة','حديقة الرعب','عاصفة البرق','القصر المسحور','برج الساحر','متاهة المرايا','قلعة التنين','جزيرة الكنز','معبد الأسرار','مملكة الجليد','وادي الأشباح','بركان الماس','مدينة الأشباح','قلعة الظلام','بوابة الجحيم','عرش الملك'];
+const levelIcons=['🏝️','❄️','🌋','🌲','🌀','🏜️','☁️','💎','🔥','⏰','🏰','🚀','🌊','🏙️','⚙️','💀','⚡','✨','🗼','🪞','🐉','🏝️','🗿','🧊','👻','💎','🏚️','🏰','🔥','👑'];
+const difficulties=['سهل','سهل','سهل','متوسط','متوسط','متوسط','متوسط','متوسط','متوسط','متوسط','متوسط','متوسط','متوسط','صعب','صعب','صعب','صعب','مستحيل','مستحيل','مستحيل','مستحيل','مستحيل','مستحيل','مستحيل','مستحيل','ملك'];
+
+const themes=[{primary:'#a855f7',secondary:'#ec4899',accent:'#f59e0b'},{primary:'#3b82f6',secondary:'#06b6d4',accent:'#8b5cf6'},{primary:'#ef4444',secondary:'#f97316',accent:'#fbbf24'},{primary:'#10b981',secondary:'#14b8a6',accent:'#06b6d4'},{primary:'#f59e0b',secondary:'#eab308',accent:'#fbbf24'},{primary:'#ec4899',secondary:'#f472b6',accent:'#fb7185'}];
+
+let audioCtx;function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function playMove(){initAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=1600;o.type='sine';g.gain.setValueAtTime(0.02,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.04);o.start();o.stop(audioCtx.currentTime+0.04)}
+function playWin(){initAudio();[1046,1318,1568,1975,2637].forEach((f,i)=>{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(0.05,audioCtx.currentTime+i*0.05);g.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+i*0.05+0.1);o.start(audioCtx.currentTime+i*0.05);o.stop(audioCtx.currentTime+i*0.05+0.1)})}
+
+function genMaze(s){let m=Array(s).fill().map(()=>Array(s).fill(1));function c(x,y){m[y][x]=0;let d=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-0.5);for(let[dx,dy]of d){let nx=x+dx,ny=y+dy;if(nx>0&&nx<s-1&&ny>0&&ny<s-1&&m[ny][nx]){m[y+dy/2][x+dx/2]=0;c(nx,ny)}}}c(1,1);m[s-2][s-2]=0;return m}
+
+function createLevelSelect(){const container=document.getElementById('levelSelect');container.innerHTML='';for(let i=0;i<30;i++){const card=document.createElement('div');card.className='level-card '+(i<=unlockedLevel?'unlocked':'locked');card.innerHTML=`<div class="level-icon">${i<=unlockedLevel?levelIcons[i]:'🔒'}</div><div class="level-num">${i+1}</div><div class="level-name">${levelNames[i]}</div><div class="level-difficulty">${difficulties[i]} ${i<10?'⭐':i<20?'🔥':i<29?'💀':'👑'}</div>`;if(i<=unlockedLevel)card.onclick=()=>startLevel(i);container.appendChild(card)}}
+
+function showHome(){document.getElementById('homeScreen').classList.add('active');document.getElementById('levelScreen').classList.remove('active');document.getElementById('gameScreen').classList.remove('active')}
+function showLevels(){document.getElementById('homeScreen').classList.remove('active');document.getElementById('levelScreen').classList.add('active');document.getElementById('gameScreen').classList.remove('active');createLevelSelect()}
+function showGame(){document.getElementById('homeScreen').classList.remove('active');document.getElementById('levelScreen').classList.remove('active');document.getElementById('gameScreen').classList.add('active')}
+
+function startLevel(l){level=l;const themeIndex=Math.floor(l/5);document.body.className='theme-'+(themeIndex%6);let size=Math.min(11+Math.floor(l/3)*2,23);canvas.width=canvas.height=size*26;maze=genMaze(size);player={x:1,y:1};goal={x:size-2,y:size-2};moves=time=0;clearInterval(timer);timer=setInterval(()=>{time++;document.getElementById('time').textContent=time},1000);document.getElementById('levelTitle').textContent=levelNames[l];updateUI();draw();showGame()}
+
+function move(dx,dy){let nx=player.x+dx,ny=player.y+dy;if(nx>=0&&nx<maze[0].length&&ny>=0&&ny<maze.length&&!maze[ny][nx]){player.x=nx;player.y=ny;moves++;playMove();updateUI();draw();if(player.x===goal.x&&player.y===goal.y){clearInterval(timer);playWin();if(level===unlockedLevel&&level<29){unlockedLevel++;localStorage.setItem('unlockedLevel',unlockedLevel)}setTimeout(showWinPopup,100)}}}
+
+function showWinPopup(){document.getElementById('winText').innerHTML=`👑 ${levelNames[level]}<br><br>⟡ ${moves} حركة<br>⟡ ${time} ثانية`;document.getElementById('winPopup').classList.add('show')}
+function continueGame(){document.getElementById('winPopup').classList.remove('show');if(level<29){startLevel(level+1)}else{setTimeout(()=>{document.getElementById('winText').innerHTML='👑 ملك المتاهة 👑👑👑<br><br>أنت ملك المتاهات';document.getElementById('winPopup').classList.add('show');setTimeout(()=>showLevels(),3000)},300)}}
+
+function draw(){const themeIndex=Math.floor(level/5);const theme=themes[themeIndex%themes.length];let s=26;ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);for(let y=0;y<maze.length;y++){for(let x=0;x<maze[y].length;x++){if(maze[y][x]){const grad=ctx.createRadialGradient(x*s+13,y*s+13,0,x*s+13,y*s+13,13);grad.addColorStop(0,theme.primary);grad.addColorStop(0.6,theme.secondary);grad.addColorStop(1,theme.accent);ctx.fillStyle=grad;ctx.shadowBlur=25;ctx.shadowColor=theme.primary;ctx.fillRect(x*s+1,y*s+1,s-2,s-2)}}}ctx.shadowBlur=45;ctx.shadowColor=theme.secondary;ctx.fillStyle=theme.secondary;ctx.beginPath();ctx.arc(goal.x*s+13,goal.y*s+13,11,0,Math.PI*2);ctx.fill();ctx.shadowBlur=55;ctx.shadowColor=theme.primary;ctx.fillStyle=theme.primary;ctx.beginPath();ctx.arc(player.x*s+13,player.y*s+13,11,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0}
+
+function updateUI(){document.getElementById('level').textContent=(level+1)+'/30';document.getElementById('moves').textContent=moves}
+function resetLevel(){startLevel(level)}
+function nextLevel(){if(level<29)startLevel(level+1)}
+function selectLevel(){let n=prompt('اختر المستوى 1-30:',level+1);n=parseInt(n)-1;if(n>=0&&n<30&&n<=unlockedLevel)startLevel(n)}
+function hint(){alert('التلميح: اتبع الجدار الأيمن دائماً! 👉')}
+
+document.addEventListener('keydown',(e)=>{if(e.key==='ArrowUp')move(0,-1);if(e.key==='ArrowDown')move(0,1);if(e.key==='ArrowLeft')move(-1,0);if(e.key==='ArrowRight')move(1,0)});
+document.addEventListener('touchmove',(e)=>{if(e.touches.length>1)e.preventDefault()},{passive:false});
+document.addEventListener('click',initAudio,{once:true});
+
+showHome();
+</script>
+<!-- كود AdMob -->
+<script type="module">
+  import { AdMob } from 'https://cdn.jsdelivr.net/npm/@capacitor-community/admob@latest/dist/esm/index.js';
+  
+  document.addEventListener('deviceready', async () => {
+    await AdMob.initialize({
+      appId: 'ca-app-pub-1524870124563448~8232306240'
+    });
+    
+    await AdMob.prepareInterstitial({
+      adId: 'ca-app-pub-1524870124563448/8587529469'
+    });
+  });
+
+  window.showLevelAd = async () => {
+    try {
+      await AdMob.showInterstitial();
+      await AdMob.prepareInterstitial({
+        adId: 'ca-app-pub-1524870124563448/8587529469'
+      });
+    } catch (e) {
+      console.log('Ad error:', e);
+    }
+  }
+</script>
+</body>
+</html>
